@@ -39,7 +39,7 @@ const getJob = async () => {
     const ffmpegProc = spawn("ffmpeg", ffmpegArgs);
     ffmpegProc.stdout.on("data", (msg) => console.log(msg.toString()));
     ffmpegProc.stderr.on("data", (msg) => console.log(msg.toString()));
-    ffmpegProc.on("close", (code) => {
+    ffmpegProc.on("close", async (code) => {
       jobList.forEach((job, i) => {
         if (
           job.index == index &&
@@ -62,17 +62,12 @@ const getJob = async () => {
         tracks.forEach((track) => {
           if (track["@type"] == "Audio") {
             resultAudioDuration = track["Duration"];
+            const n = Number(resultAudioDuration);
+            resultAudioDuration = Number.isFinite(n) ? n : 0;
           }
         });
 
-        console.log(
-          JSON.stringify({
-            ...body,
-            succeeded: true,
-            result_audio_duration: resultAudioDuration,
-          })
-        );
-        fetch(hostURL, {
+        await fetch(hostURL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -84,7 +79,7 @@ const getJob = async () => {
       } else {
         console.log(`Something went wrong on Job:${JSON.stringify(body)}`);
 
-        fetch(hostURL, {
+        await fetch(hostURL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
