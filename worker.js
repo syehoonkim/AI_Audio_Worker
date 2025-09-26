@@ -11,7 +11,7 @@ const jobList = [];
 
 const getJob = async () => {
   try {
-    const fetchedJob = await fetch(hostURL, { method: "GET" });
+    const fetchedJob = await fetch(hostURL + "/job/claim", { method: "GET" });
     const body = await fetchedJob.json();
     if (!body) {
       console.log("No job to do...waiting for 1 mins");
@@ -67,7 +67,7 @@ const getJob = async () => {
           }
         });
 
-        await fetch(hostURL, {
+        await fetch(hostURL + "/job/result", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -79,7 +79,7 @@ const getJob = async () => {
       } else {
         console.log(`Something went wrong on Job:${JSON.stringify(body)}`);
 
-        await fetch(hostURL, {
+        await fetch(hostURL + "/job/result", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
