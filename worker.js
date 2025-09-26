@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 
 const { spawn, execFileSync } = require("child_process");
 
@@ -20,10 +21,9 @@ const getJob = async () => {
 
     jobList.push(body);
     const { index, src, dst, title, episode, video_duration } = body;
-    const dstPath = dst.replace(
-      dst.split(".")[dst.split(".").length - 1],
-      "mp3"
-    );
+
+    const p = path.parse(dst);
+    const dstPath = path.join(p.dir, `${p.name}.mp3`);
 
     const ffmpegArgs = [
       "-hide_banner",
@@ -38,6 +38,7 @@ const getJob = async () => {
     ];
     const ffmpegProc = spawn("ffmpeg", ffmpegArgs);
     ffmpegProc.stdout.on("data", (msg) => console.log(msg.toString()));
+    ffmpegProc.stderr.on("data", (msg) => console.log(msg.toString()));
     ffmpegProc.on("close", (code) => {
       jobList.forEach((job, i) => {
         if (
@@ -73,6 +74,7 @@ const getJob = async () => {
         );
         fetch(hostURL, {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...body,
             succeeded: true,
@@ -84,6 +86,7 @@ const getJob = async () => {
 
         fetch(hostURL, {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...body,
             succeeded: false,
